@@ -51,6 +51,48 @@ class Document extends SwaggerObject\AbstractObject
         
         return $this->operationsById;
     }
+
+    public function getOperationsByTag($reset = false)
+    {
+        if($reset) {
+            $this->operationsById = [];
+        }
+        
+        if(empty($this->operationsById)) {
+            $paths = $this->getPaths();
+            foreach($paths->getAll() as $path => $pathItem) {
+                foreach([
+                    [$pathItem, 'getGet'],
+                    [$pathItem, 'getPut'],
+                    [$pathItem, 'getPost'],
+                    [$pathItem, 'getDelete'],
+                    [$pathItem, 'getOptions'],
+                    [$pathItem, 'getHead'],
+                    [$pathItem, 'getPatch'],
+                ] as $operationMethod) {
+                    try {
+                        $operation = $operationMethod();
+                        
+                        if($operation instanceof SwaggerObject\Operation) {
+                            $operationKey = strtolower($operation->getOperationId());
+                        
+                            $this->operationsById[$operationKey] = new OperationReference(
+                                $operation->getOperationId(),
+                                $path,
+                                $pathItem,
+                                strtoupper(substr($operationMethod[1], 3)),
+                                $operation
+                            );
+                        }
+                    } catch(SwaggerException\MissingDocumentPropertyException $e) {
+                        // That's okay. Not every method is implemented.
+                    }
+                }
+            }
+        }
+        
+        return $this->operationsById;
+    }
     
     public function getOperationById($operationId, $reset = false)
     {
@@ -218,7 +260,7 @@ class Document extends SwaggerObject\AbstractObject
     
     public function getParameters()
     {
-        return $this->getDocumentObjectProperty('parameters', SwaggerObject\ParametersDefinitions::class);
+        return $this->getDocumentParameterProperty('parameters');
     }
     
     public function setParameters(SwaggerObject\Parameters $parameters)

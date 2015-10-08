@@ -1,8 +1,10 @@
 <?php
 namespace Swagger\Object;
 
-abstract class Parameter extends AbstractObject
+abstract class Parameter extends AbstractObject implements ReferentialInterface
 {
+    use ReferentialTrait;
+    
     public function getName()
     {
         return $this->getDocumentProperty('name');

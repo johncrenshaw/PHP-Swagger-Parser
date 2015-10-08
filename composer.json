@@ -1,10 +1,14 @@
 {
-    "name": "thefrozenfire/swagger",
+    "name": "johncrenshaw/swagger",
     "description": "Swagger parser for PHP",
     "authors": [
         {
             "name": "Justin Martin",
             "email": "frozenfire@thefrozenfire.com"
+        },
+        {
+            "name": "John Crenshaw",
+            "email": "noreply@mageguys.com"
         }
     ],
     "require": {
