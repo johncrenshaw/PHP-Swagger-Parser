@@ -31,16 +31,19 @@ class Document extends SwaggerObject\AbstractObject
                     try {
                         $operation = $operationMethod();
                         
-                        if($operation instanceof SwaggerObject\Operation) {
+                        if($operation && $operation instanceof SwaggerObject\Operation) {
                             $operationKey = strtolower($operation->getOperationId());
                         
-                            $this->operationsById[$operationKey] = new OperationReference(
-                                $operation->getOperationId(),
-                                $path,
-                                $pathItem,
-                                strtoupper(substr($operationMethod[1], 3)),
-                                $operation
-                            );
+                            if ($operationKey)
+                            {
+                                $this->operationsById[$operationKey] = new OperationReference(
+                                    $operation->getOperationId(),
+                                    $path,
+                                    $pathItem,
+                                    strtoupper(substr($operationMethod[1], 3)),
+                                    $operation
+                                );
+                            }
                         }
                     } catch(SwaggerException\MissingDocumentPropertyException $e) {
                         // That's okay. Not every method is implemented.
@@ -73,16 +76,19 @@ class Document extends SwaggerObject\AbstractObject
                     try {
                         $operation = $operationMethod();
                         
-                        if($operation instanceof SwaggerObject\Operation) {
+                        if($operation && $operation instanceof SwaggerObject\Operation) {
                             $operationKey = strtolower($operation->getOperationId());
                         
-                            $this->operationsById[$operationKey] = new OperationReference(
-                                $operation->getOperationId(),
-                                $path,
-                                $pathItem,
-                                strtoupper(substr($operationMethod[1], 3)),
-                                $operation
-                            );
+                            if ($operationKey)
+                            {
+                                $this->operationsById[$operationKey] = new OperationReference(
+                                    $operation->getOperationId(),
+                                    $path,
+                                    $pathItem,
+                                    strtoupper(substr($operationMethod[1], 3)),
+                                    $operation
+                                );
+                            }
                         }
                     } catch(SwaggerException\MissingDocumentPropertyException $e) {
                         // That's okay. Not every method is implemented.
@@ -129,15 +135,38 @@ class Document extends SwaggerObject\AbstractObject
     {
         $operation = $this->getOperationById($operationId);
         try {
-            $response = $operation->getOperation()
-                ->getResponses()
-                ->getHttpStatusCode($statusCode);
+            if ($operation)
+            {
+                $op = $operation->getOperation();
+                if ($op)
+                {
+                    $responses = $op->getResponses();
+                    if ($responses)
+                    {
+                        $response = $responses->getHttpStatusCode($statusCode);
+                    }
+                }
+            }
         } catch(SwaggerException\MissingDocumentPropertyException $e) {
+            $response = null;
+        }
+
+        if (is_null($response))
+        {
             // This status is not defined, but we can hope for an operation default
             try {
-                $response = $operation->getOperation()
-                    ->getResponses()
-                    ->getDefault();
+                if ($operation)
+                {
+                    $op = $operation->getOperation();
+                    if ($op)
+                    {
+                        $responses = $op->getResponses();
+                        if ($responses)
+                        {
+                            $response = $responses->getDefault();
+                        }
+                    }
+                }
             } catch(SwaggerException\MissingDocumentPropertyException $e) {
                 throw (new SwaggerException\UndefinedOperationResponseSchemaException)
                     ->setOperationId($operationId)
@@ -145,6 +174,11 @@ class Document extends SwaggerObject\AbstractObject
             }
         }
         
+        if (is_null($response))
+        {
+            return null;
+        }
+
         $schema = $this->getSchemaResolver()
             ->resolveReference($response->getSchema());
         

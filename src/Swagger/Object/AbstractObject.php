@@ -69,11 +69,7 @@ abstract class AbstractObject implements ObjectInterface
     }
     
     public function unsetDocumentProperty($name) {
-		return unset($this->getDocument()->$name);
-    }
-    
-    public function hasDocumentProperty($name) {
-        return property_exists($this->getDocument(), $name);
+        unset($this->getDocument()->{$name});
     }
     
     public function hasDocumentObjectProperty($name)

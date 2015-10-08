@@ -89,6 +89,13 @@ class SchemaResolver
                     ->setPropertyName($name)
                     ->setSchema($schema);
             }
+            
+            if (is_null($propertySchema))
+            {
+                throw (new SwaggerException\UndefinedPropertySchemaException)
+                    ->setPropertyName($name)
+                    ->setSchema($schema);
+            }
         
             $propertyValue = $this->parseType(
                 $propertySchema,
@@ -123,14 +130,22 @@ class SchemaResolver
     protected function findSchemaForProperty(Object\Schema $schema, $property)
     {
         try {
-            $propertySchema = $schema->getProperties()
-                ->getProperty($property);
+            $properties = $schema->getProperties();
+            if ($properties)
+            {
+                $propertySchema = $properties->getProperty($property);
+            }
         } catch(SwaggerException\MissingDocumentPropertyException $e) {
             try {
                 $propertySchema = $this->findPropertyInAllOf($schema, $property);
             } catch(SwaggerException\MissingDocumentPropertyException $e) {
                 $propertySchema = $this->findPropertyInAdditionalProperties($schema, $property);
             }
+        }
+
+        if (is_null($propertySchema))
+        {
+            return null;
         }
         
         $propertySchema = $this->resolveReference($propertySchema);
