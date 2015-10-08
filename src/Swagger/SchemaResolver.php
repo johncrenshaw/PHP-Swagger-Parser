@@ -186,7 +186,7 @@ class SchemaResolver
         return $propertySchema;
     }
     
-    protected function resolveReference(Object\ReferentialInterface $reference)
+    public function resolveReference(Object\ReferentialInterface $reference)
     {
         if(!$reference->hasRef()) {
             return $reference;
@@ -194,8 +194,8 @@ class SchemaResolver
     
         $ref = $reference->getRef();
     
-        if($reference->hasUri()) {
-            $uri = $reference->getUri();
+        if($ref && $ref->hasUri()) {
+            $uri = $ref->getUri();
             if(!$this->hasRelativeResolver($uri)) {
                 throw (new SwaggerException\RelativeResolverUnavailableException)
                     ->setUri($uri);
@@ -211,8 +211,8 @@ class SchemaResolver
         } else {
             $resolver = $this;
         }
-        
-        return $resolver->findTypeAtPointer($reference->getPointer());
+
+        return $resolver->findTypeAtPointer($ref->getPointer());
     }
     
     protected function getDocument()
@@ -226,18 +226,18 @@ class SchemaResolver
         return $this;
     }
     
-    protected function setRelativeResolvers($relativeResolvers)
+    public function setRelativeResolvers($relativeResolvers)
     {
         $this->relativeResolvers = $relativeResolvers;
         return $this;
     }
     
-    protected function hasRelativeResolver($path)
+    public function hasRelativeResolver($path)
     {
         return !empty($this->relativeResolvers[$path]);
     }
     
-    protected function getRelativeResolver($path)
+    public function getRelativeResolver($path)
     {
         return $this->relativeResolvers[$path];
     }

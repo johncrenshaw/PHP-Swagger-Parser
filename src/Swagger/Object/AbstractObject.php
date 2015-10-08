@@ -90,6 +90,10 @@ abstract class AbstractObject implements ObjectInterface
             
             return $newValue;
         } else {
+            if (is_null($value))
+            {
+                return null;
+            }
             return new $swaggerObjectClass($value);
         }
     }

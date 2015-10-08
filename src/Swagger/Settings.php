@@ -1,6 +1,8 @@
 <?php
 namespace Swagger;
 
+use Swagger\Object as SwaggerObject;
+
 class Settings extends SwaggerObject\AbstractObject
 {
     static protected $throwMissingDocumentPropertyException = true;
