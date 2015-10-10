@@ -4,7 +4,9 @@ namespace Swagger\Object;
 class Schema extends AbstractObject implements TypeObjectInterface, ReferentialInterface
 {
     use TypeObjectTrait,
-        ReferentialTrait;
+        ReferentialTrait,
+        ReferencableTrait,
+        PropertiesTrait;
     
     public function getDescription()
     {
@@ -15,35 +17,15 @@ class Schema extends AbstractObject implements TypeObjectInterface, ReferentialI
     {
         return $this->setDocumentProperty('description', $description);
     }
-    
-    public function getAllOf()
-    {
-        return $this->getDocumentProperty('allOf', Schema::class);
-    }
-    
-    public function setAllOf($allOf)
-    {
-        return $this->setDocumentProperty('allOf', $allOf);
-    }
-    
+
     public function getProperties()
     {
-        return $this->getDocumentObjectProperty('properties', Properties::class);
-    }
-    
-    public function setProperties($properties)
-    {
-        return $this->setDocumentObjectProperty('properties', $properties);
-    }
-    
-    public function getAdditionalProperties()
-    {
-        return $this->getDocumentProperty('additionalProperties', Schema::class);
-    }
-    
-    public function setAdditionalProperties($additionalProperties)
-    {
-        return $this->setDocumentProperty('additionalProperties', $additionalProperties);
+        $ret = $this->getDocumentObjectProperty('properties', Properties::class);
+        if ($ret)
+        {
+            $ret->setParentSchema($this);
+        }
+        return $ret;
     }
     
     public function getDiscriminator()
@@ -94,5 +76,13 @@ class Schema extends AbstractObject implements TypeObjectInterface, ReferentialI
     public function setExample($example)
     {
         return $this->setDocumentProperty('example', $example);
+    }
+    
+    public function getSample()
+    {
+        // TODO: Build a more complete sample
+        return [
+            '...'=>'...'
+        ];
     }
 }

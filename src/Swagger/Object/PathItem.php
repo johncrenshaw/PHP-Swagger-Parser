@@ -3,7 +3,8 @@ namespace Swagger\Object;
 
 class PathItem extends AbstractObject implements ReferentialInterface
 {
-    use ReferentialTrait;
+    use ReferentialTrait,
+        ReferencableTrait;
     
     public function getGet()
     {

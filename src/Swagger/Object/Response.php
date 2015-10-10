@@ -3,6 +3,8 @@ namespace Swagger\Object;
 
 class Response extends AbstractObject
 {
+    use ReferencableTrait;
+
     public function getDescription()
     {
         return $this->getDocumentProperty('description');

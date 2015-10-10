@@ -5,6 +5,23 @@ class Properties extends AbstractObject
 {
     use CollectionObjectTrait;
     
+    protected $_parentSchema = null;
+
+    public function hasParentSchema()
+    {
+        return isset($this->_parentSchema);
+    }
+    
+    public function getParentSchema()
+    {
+        return $this->_parentSchema;
+    }
+    
+    public function setParentSchema($parent_schema)
+    {
+        $this->_parentSchema = $parent_schema;
+    }
+    
     public function getItem($name)
     {
         return $this->getProperty($name);
@@ -12,7 +29,12 @@ class Properties extends AbstractObject
     
     public function getProperty($name)
     {
-        return $this->getDocumentObjectProperty($name, Items::class);
+        $ret = $this->getDocumentObjectProperty($name, Items::class);
+        if ($ret && $this->hasParentSchema())
+        {
+            $ret->setParentSchema($this->getParentSchema());
+        }
+        return $ret;
     }
     
     public function setProperty($name, Items $property)

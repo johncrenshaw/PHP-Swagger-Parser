@@ -115,11 +115,125 @@ class Operation extends AbstractObject
     
     public function getSecurity()
     {
-        return $this->getDocumentObjectProperty('security', Security::class);
+        return $this->getDocumentObjectProperty('security', SecurityRequirement::class);
     }
     
     public function setSecurity($security)
     {
         return $this->setDocumentObjectProperty('security', $security);
+    }
+
+    public function getHAR($document, $method_name, $path_name)
+    {
+        return [
+            "method"=>strtoupper($method_name),
+            "url"=>'https://'.$document->getHost().$document->getBasePath().$path_name,
+            "httpVersion"=>"HTTP/1.1",
+            "cookies"=>$this->getHARCookies($document),
+            "headers"=>$this->getHARHeaders($document),
+            "queryString"=>$this->getHARQueryString($document),
+            "postData"=>(object)$this->getHARPostData($document),
+//            "headersSize"=>150,
+//            "bodySize"=>0,
+//            "comment"=>"",
+        ];
+    }
+
+    public function getHARCookies($document)
+    {
+        return [];
+    }
+
+    public function getAllParametersByType($document, $type)
+    {
+        // TODO: Include parameters implied by the security scheme
+        // TODO: Include global request parameters
+
+        $ret = [];
+        if ($parameters = $this->getParameters())
+        {
+            foreach($parameters as $parameter)
+            {
+                if (!$parameter)
+                {
+                    continue;
+                }
+
+                // Resolve references
+                $parameter = $document->getSchemaResolver()->resolveReference($parameter);
+
+                if ($parameter->getIn() == $type)
+                {
+                    $ret[] = $parameter;
+                }
+            }
+        }
+        
+        return $ret;
+    }
+
+    public function getHARHeaders($document)
+    {
+        $ret = [];
+        foreach ($this->getAllParametersByType($document, 'header') as $parameter)
+        {
+            $ret[] = [
+                'name'=>$parameter->getName(),
+                'value'=>$parameter->getSample(),
+            ];
+        }
+        return $ret;
+    }
+
+    public function getHARQueryString($document)
+    {
+        $ret = [];
+        foreach ($this->getAllParametersByType($document, 'query') as $parameter)
+        {
+            $ret[] = [
+                'name'=>$parameter->getName(),
+                'value'=>$parameter->getSample(),
+            ];
+        }
+        return $ret;
+    }
+
+    public function getHARPostData($document)
+    {
+        $ret = [];
+        foreach ($this->getAllParametersByType($document, 'body') as $parameter)
+        {
+            $ret = $parameter->getSchema()->getSample();
+        }
+        if (!empty($ret))
+        {
+            $ret = [
+                'size'=>0,
+                'mimeType'=>'application/json',
+                'params'=>[],
+                'paramsObj'=>false,
+                'text'=>json_encode($ret),
+                "jsonObj"=>$ret,
+            ];
+        }
+        if (empty($ret))
+        {
+            // Check for the alternate formdata variation on body parameters
+            foreach ($this->getAllParametersByType($document, 'formData') as $parameter)
+            {
+                $ret[] = [
+                    'name'=>$parameter->getName(),
+                    'value'=>$parameter->getSample(),
+                ];
+            }
+            if (!empty($ret))
+            {
+                $ret = [
+                    "mimeType"=>'application/x-www-form-urlencoded',
+                    "params"=>$ret,
+                ];
+            }
+        }
+        return $ret;
     }
 }

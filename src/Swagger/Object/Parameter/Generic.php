@@ -6,7 +6,7 @@ use Swagger\Object\TypeObjectTrait;
 use Swagger\Object\TypeObjectInterface;
 use Swagger\Object\Parameter as AbstractParameter;
 
-abstract class Generic extends AbstractParameter implements TypeObjectInterface
+class Generic extends AbstractParameter implements TypeObjectInterface
 {
     use TypeObjectTrait;
     

@@ -3,6 +3,8 @@ namespace Swagger\Object;
 
 class SecurityScheme extends AbstractObject
 {
+    use ReferencableTrait;
+
     const TYPE_BASIC = 'basic';
     const TYPE_APIKEY = 'apiKey';
     const TYPE_OAUTH2 = 'oauth2';

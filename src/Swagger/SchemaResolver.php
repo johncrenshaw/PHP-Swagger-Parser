@@ -66,7 +66,7 @@ class SchemaResolver
                     ->getSecurityDefinitions()
                     ->getDefinition($pointer->getSegment(1));
             default:
-                throw new \OutOfBoundsException('The specified type path is not supported');
+                throw new \OutOfBoundsException('The specified type path ('.$pointer->getSegment(0).') is not supported');
         }
     }
     
@@ -212,7 +212,15 @@ class SchemaResolver
             $resolver = $this;
         }
 
-        return $resolver->findTypeAtPointer($ref->getPointer());
+        $ret = $resolver->findTypeAtPointer($ref->getPointer());
+        
+        // Remember which reference pointed here
+        if ($ret)
+        {
+            $ret->setFromReference($ref);
+        }
+        
+        return $ret;
     }
     
     protected function getDocument()

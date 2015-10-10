@@ -132,6 +132,10 @@ abstract class AbstractObject implements ObjectInterface
             
             return $newValue;
         } else {
+            if (is_null($value))
+            {
+                return null;
+            }
             $swaggerObjectClass = $this->getParameterClass($value);
             return new $swaggerObjectClass($value);
         }

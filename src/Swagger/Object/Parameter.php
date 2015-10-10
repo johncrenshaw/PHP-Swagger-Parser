@@ -3,7 +3,8 @@ namespace Swagger\Object;
 
 abstract class Parameter extends AbstractObject implements ReferentialInterface
 {
-    use ReferentialTrait;
+    use ReferentialTrait,
+        ReferencableTrait;
     
     public function getName()
     {
@@ -43,5 +44,11 @@ abstract class Parameter extends AbstractObject implements ReferentialInterface
     public function setRequired($required)
     {
         return $this->setDocumentProperty('required', $required);
+    }
+    
+    public function getSample()
+    {
+        // TODO: Provide a real sample
+        return '...';
     }
 }
