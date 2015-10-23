@@ -78,11 +78,18 @@ class Schema extends AbstractObject implements TypeObjectInterface, ReferentialI
         return $this->setDocumentProperty('example', $example);
     }
     
-    public function getSample()
+    public function getSample($schema_resolver)
     {
-        // TODO: Build a more complete sample
-        return [
-            '...'=>'...'
-        ];
+        $ret = [];
+        foreach($this->getAllProperties($schema_resolver) as $property_name=>$property)
+        {
+            $property = $schema_resolver->resolveReference($property);
+            $ret[$property_name] = $property->getSample($schema_resolver);
+        }
+        if ($additional_properties = $this->getAdditionalProperties()) {
+            // TODO: Implement full sample for additional Properties
+            $ret['...'] = '...';
+        }
+        return $ret;
     }
 }

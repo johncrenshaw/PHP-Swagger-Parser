@@ -46,7 +46,7 @@ abstract class Parameter extends AbstractObject implements ReferentialInterface
         return $this->setDocumentProperty('required', $required);
     }
     
-    public function getSample()
+    public function getSample($schema_resolver)
     {
         // TODO: Provide a real sample
         return '...';

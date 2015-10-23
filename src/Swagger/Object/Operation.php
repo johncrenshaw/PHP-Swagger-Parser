@@ -203,7 +203,7 @@ class Operation extends AbstractObject
         $ret = [];
         foreach ($this->getAllParametersByType($document, 'body') as $parameter)
         {
-            $ret = $parameter->getSchema()->getSample();
+            $ret = $parameter->getSchema()->getSample($document->getSchemaResolver());
         }
         if (!empty($ret))
         {
@@ -223,7 +223,7 @@ class Operation extends AbstractObject
             {
                 $ret[] = [
                     'name'=>$parameter->getName(),
-                    'value'=>$parameter->getSample(),
+                    'value'=>$parameter->getSample($document->getSchemaResolver()),
                 ];
             }
             if (!empty($ret))
