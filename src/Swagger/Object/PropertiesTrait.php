@@ -41,9 +41,9 @@ trait PropertiesTrait
             foreach($this->getAllOf() as $schema)
             {
                 $schema = $resolver->resolveReference($schema);
-                if ($sub_properties = $schema->getProperties())
+                if ($sub_properties = $schema->getAllProperties($resolver))
                 {
-                    $properties = $this->_mergeProperties($properties, $sub_properties->getAll());
+                    $properties = $this->_mergeProperties($properties, $sub_properties);
                 }
             }
         }
