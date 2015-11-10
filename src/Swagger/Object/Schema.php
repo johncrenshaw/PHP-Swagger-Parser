@@ -77,6 +77,16 @@ class Schema extends AbstractObject implements TypeObjectInterface, ReferentialI
     {
         return $this->setDocumentProperty('example', $example);
     }
+
+    public function getRequired()
+    {
+        return $this->getDocumentProperty('required');
+    }
+    
+    public function setRequired($required)
+    {
+        return $this->setDocumentProperty('required', $required);
+    }
     
     public function getSample($schema_resolver)
     {
@@ -84,10 +94,16 @@ class Schema extends AbstractObject implements TypeObjectInterface, ReferentialI
         foreach($this->getAllProperties($schema_resolver) as $property_name=>$property)
         {
             $property = $schema_resolver->resolveReference($property);
+            if ($property->getVendorExtension('sample-visible') === false)
+            {
+                // Skip the item if it isn't intended to be shown in the sample
+                continue;
+            }
             $ret[$property_name] = $property->getSample($schema_resolver);
         }
         if ($additional_properties = $this->getAdditionalProperties()) {
-            // TODO: Implement full sample for additional Properties
+            $additional_properties = $schema_resolver->resolveReference($additional_properties);
+            $ret['foo'] = $additional_properties->getSample($schema_resolver);
             $ret['...'] = '...';
         }
         return $ret;

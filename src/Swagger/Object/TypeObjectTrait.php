@@ -172,4 +172,116 @@ trait TypeObjectTrait
     {
         return $this->setDocumentProperty('multipleOf', $multipleOf);
     }
+
+    public function _makeSample($schema_resolver, $type, $format, $items)
+    {
+        // If we have an explicit sample, use it
+        if (($sample = $this->getVendorExtension('sample')) !== null)
+        {
+            return $sample;
+        }
+
+        // If we have a default, use it
+        if (($default = $this->getDefault()) !== null)
+        {
+            return $default;
+        }
+
+        // If we have an enum, use the first entry
+        if ($enum = $this->getEnum())
+        {
+            if (count($enum) && isset($enum[0]))
+            {
+                return $enum[0];
+            }
+        }
+        
+        switch($type)
+        {
+        case 'object':
+            $ret = [];
+            foreach($this->getAllProperties($schema_resolver) as $property_name=>$property)
+            {
+                $property = $schema_resolver->resolveReference($property);
+                $ret[$property_name] = $property->getSample($schema_resolver);
+            }
+            if ($additional_properties = $this->getAdditionalProperties()) {
+                $additional_properties = $schema_resolver->resolveReference($additional_properties);
+                $ret['foo'] = $additional_properties->getSample($schema_resolver);
+                $ret['...'] = '...';
+            }
+            return $ret;
+            break;
+        case 'array':
+            $ret = [];
+            $items = $schema_resolver->resolveReference($items);
+            $ret[] = $items->getSample($schema_resolver);
+            $ret[] = '...';
+            return $ret;
+            break;
+        case 'integer':
+            if ($this->getMinimum() !== null && $this->getMaximum() !== null)
+            {
+                return (int)(($this->getMinimum() + $this->getMaximum()) / 2);
+            }
+            else if ($this->getMinimum() !== null)
+            {
+                return $this->getMinimum();
+            }
+            else if ($this->getMaximum() !== null)
+            {
+                return $this->getMaximum();
+            }
+            return 1234567890;
+            break;
+        case 'number':
+            if ($this->getMinimum() !== null && $this->getMaximum() !== null)
+            {
+                return (int)(($this->getMinimum() + $this->getMaximum()) / 2);
+            }
+            else if ($this->getMinimum() !== null)
+            {
+                return $this->getMinimum();
+            }
+            else if ($this->getMaximum() !== null)
+            {
+                return $this->getMaximum();
+            }
+            return 3.14159265359;
+            break;
+        case 'string':
+            switch($format)
+            {
+            case 'byte':
+                return base64_encode('Congratulations, you decoded it!').'...';
+                break;
+            case 'binary':
+                return '...';
+                break;
+            case 'date':
+                return '2015-10-21';
+                break;
+            case 'date-time':
+                return '2015-10-21T19:23:41';
+                break;
+            case 'password':
+                return 'opensesame';
+                break;
+            case 'url':
+                return 'http://example.com';
+                break;
+            default:
+                return 'foo';
+                break;
+            }
+            break;
+        case 'boolean':
+            return true;
+            break;
+        default:
+            return '...';
+            break;
+        }
+        return '...';
+    }
 }

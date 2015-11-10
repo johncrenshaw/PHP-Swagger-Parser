@@ -33,6 +33,7 @@ class Properties extends AbstractObject
         if ($ret && $this->hasParentSchema())
         {
             $ret->setParentSchema($this->getParentSchema());
+            $ret->setNameInParentSchema($name);
         }
         return $ret;
     }

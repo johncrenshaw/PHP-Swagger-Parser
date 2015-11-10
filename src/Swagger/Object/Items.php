@@ -6,8 +6,9 @@ class Items extends AbstractObject implements TypeObjectInterface, ReferentialIn
     use TypeObjectTrait,
         ReferentialTrait,
         PropertiesTrait;
-    
+
     protected $_parentSchema = null;
+    protected $_nameInParentSchema = null;
 
     public function hasParentSchema()
     {
@@ -22,6 +23,21 @@ class Items extends AbstractObject implements TypeObjectInterface, ReferentialIn
     public function setParentSchema($parent_schema)
     {
         $this->_parentSchema = $parent_schema;
+    }
+    
+    public function hasNameInParentSchema()
+    {
+        return isset($this->_nameInParentSchema);
+    }
+    
+    public function getNameInParentSchema()
+    {
+        return $this->_nameInParentSchema;
+    }
+    
+    public function setNameInParentSchema($name_in_parent_schema)
+    {
+        $this->_nameInParentSchema = $name_in_parent_schema;
     }
     
     public function getTitle()
@@ -46,11 +62,36 @@ class Items extends AbstractObject implements TypeObjectInterface, ReferentialIn
     
     public function getRequired()
     {
+        // Search the parent schema to see if this item is required. This is the "right" way.
+        if ($parent = $this->getParentSchema())
+        {
+            if (is_array($required = $parent->getRequired()))
+            {
+                return in_array($this->getNameInParentSchema(), $required);
+            }
+        }
+
+        // Non-standard addition, because the "right" way is awkward and inconsistent
         return $this->getDocumentProperty('required');
     }
     
     public function setRequired($required)
     {
+        // Add to the "reqired" list in the parent schema. This is the "right" way.
+        if ($parent = $this->getParentSchema())
+        {
+            if (!is_array($required = $parent->getRequired()))
+            {
+                $required = [];
+            }
+            if (!in_array($this->getNameInParentSchema(), $required))
+            {
+                $required[] = $this->getNameInParentSchema();
+            }
+            $parent->setRequired($required);
+        }
+
+        // Non-standard addition, because the "right" way is awkward and inconsistent
         return $this->setDocumentProperty('required', $required);
     }
     
@@ -77,82 +118,5 @@ class Items extends AbstractObject implements TypeObjectInterface, ReferentialIn
     public function getSample($schema_resolver)
     {
         return $this->_makeSample($schema_resolver, $this->getType(), $this->getFormat(), $this->getItems());
-//        if ($property->getType() == 'object' && $property instanceof \Swagger\Object\Schema && $property->getFromReference()) {
-//            // Object reference
-//            $property->getFromReference()->getPointer()->getSegment(1);
-//        } else if ($property->getFormat()) {
-//            // Well known other format
-//            $property->getFormat();
-//        }
-//        if ($property->getItems() && $property->getItems()->getRef()) {
-//            // Array of known object type
-//            $property->getItems()->getRef()->getPointer()->getSegment(1);
-//        } else if ($property->getItems() && $property->getItems()->getType()) {
-//            // Array of other type
-//            $property->getItems()->getType();
-//        }
-    }
-
-    public function _makeSample($schema_resolver, $type, $format, $items)
-    {
-        switch($type)
-        {
-        case 'object':
-            $ret = [];
-            foreach($this->getAllProperties($schema_resolver) as $property_name=>$property)
-            {
-                $property = $schema_resolver->resolveReference($property);
-                $ret[$property_name] = $property->getSample($schema_resolver);
-            }
-            if ($additional_properties = $this->getAdditionalProperties()) {
-                // TODO: Implement full sample for additional Properties
-                $ret['...'] = '...';
-            }
-            return $ret;
-            break;
-        case 'array':
-            $ret = [];
-            $items = $schema_resolver->resolveReference($items);
-            $ret[] = $items->getSample($schema_resolver);
-            $ret[] = '...';
-            return $ret;
-            break;
-        case 'integer':
-            return 1234567890;
-            break;
-        case 'number':
-            return 3.14159265359;
-            break;
-        case 'string':
-            switch($format)
-            {
-            case 'byte':
-                return base64_encode('Congratulations, you decoded it!').'...';
-                break;
-            case 'binary':
-                return '...';
-                break;
-            case 'date':
-                return '2015-10-21';
-                break;
-            case 'date-time':
-                return '2015-10-21T19:23:41';
-                break;
-            case 'password':
-                return 'opensesame';
-                break;
-            default:
-                return 'foo';
-                break;
-            }
-            break;
-        case 'boolean':
-            return true;
-            break;
-        default:
-            return '...';
-            break;
-        }
-        return '...';
     }
 }

@@ -11,8 +11,13 @@ class Body extends AbstractParameter
         return $this->getDocumentObjectProperty('schema', SwaggerSchema::class);
     }
     
-    public function setSchema(Schema $schema)
+    public function setSchema(SwaggerSchema $schema)
     {
-        return $this->setDocumentProperty('schema', $schema);
+        return $this->setDocumentObjectProperty('schema', $schema);
+    }
+
+    public function getSample($schema_resolver)
+    {
+        return $this->_makeSample($schema_resolver, $this->getType(), $this->getFormat(), $this->getItems());
     }
 }
